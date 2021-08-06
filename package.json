@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
+    "test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand",
     "test": "jest --verbose"
   },
   "author": "Fatima Camero",
