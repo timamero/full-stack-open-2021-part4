@@ -85,6 +85,35 @@ test('unique identifier is id', async () => {
   expect(response.body[0].id).toBeDefined()
 })
 
+test('a valid blog can be added', async () => {
+  // npm test -- -t "a valid blog can be added"
+  const newBlog = {
+    // id: "5a422bc61b54a676234d17fd",
+    title: "Microfrontends with React",
+    author: "kpiteng",
+    url: "https://dev.to/kpiteng/microfrontends-with-react-47jb",
+    likes: 1,
+    // __v: 0
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(201)
+    .expect('Content-Type', /json/)
+
+  const response = await api.get('/api/blogs')
+  const responseObject = {
+    title: response.body[initialBlogs.length].title,
+    author: response.body[initialBlogs.length].author,
+    url: response.body[initialBlogs.length].url,
+    likes: response.body[initialBlogs.length].likes,
+  }
+
+  expect(response.body).toHaveLength(initialBlogs.length + 1)
+  expect(responseObject).toEqual(newBlog)
+})
+
 afterAll(() => {
   mongoose.connection.close()
 })
