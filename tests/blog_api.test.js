@@ -88,12 +88,10 @@ test('unique identifier is id', async () => {
 test('a valid blog can be added', async () => {
   // npm test -- -t "a valid blog can be added"
   const newBlog = {
-    // id: "5a422bc61b54a676234d17fd",
     title: "Microfrontends with React",
     author: "kpiteng",
     url: "https://dev.to/kpiteng/microfrontends-with-react-47jb",
     likes: 1,
-    // __v: 0
   }
 
   await api
@@ -112,6 +110,26 @@ test('a valid blog can be added', async () => {
 
   expect(response.body).toHaveLength(initialBlogs.length + 1)
   expect(responseObject).toEqual(newBlog)
+})
+
+test('if like property is missing, add property with default value of 0', async () => {
+  // npm test -- -t "if like property is missing, add property with default value of 0"
+  const newBlog = {
+    title: "Microfrontends with React",
+    author: "kpiteng",
+    url: "https://dev.to/kpiteng/microfrontends-with-react-47jb",
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(200)
+    .expect('Content-Type', /json/)
+
+  const response = await api.get('/api/blogs')
+  const likes = response.body[initialBlogs.length].likes
+
+  expect(likes).toBe(0)
 })
 
 afterAll(() => {
