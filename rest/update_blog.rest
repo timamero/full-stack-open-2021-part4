@@ -1,0 +1,9 @@
+PUT http://localhost:3001/api/blogs/6113fbe3d68a723c94c5e8c0
+Content-Type: application/json
+
+{
+  "title": "Microfrontends with React",
+  "author": "kpiteng",
+  "url": "https://dev.to/kpiteng/microfrontends-with-react-47jb",
+  "likes": 2
+}
