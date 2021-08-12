@@ -2,8 +2,8 @@ POST http://localhost:3001/api/blogs
 Content-Type: application/json
 
 {
-  "title": "8 React Projects Every Beginner Should Try",
-  "author": "The Nerdy Dev",
-  "url": "https://dev.to/thenerdydev/10-react-projects-every-beginner-should-try-fk9",
-  "likes": 411
+  "title": "The Best VS Code Extensions For Remote Working",
+  "author": "Carlo Marrone",
+  "url": "https://dev.to/marrone_carlo/the-best-vs-code-extensions-for-remote-working-e8e",
+  "likes": 33
 }

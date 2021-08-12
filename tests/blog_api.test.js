@@ -160,6 +160,24 @@ test('if url is missing response with Bad Request', async () => {
     .expect(400)
 })
 
+test('a blog can be deleted', async () => {
+  // npm test -- -t "a blog can be deleted"
+  const responseAtStart = await api.get('/api/blogs')
+  const blogsAtStart = responseAtStart.body
+  const blogToDelete = blogsAtStart[0]
+
+  await api
+    .delete(`/api/blogs/${blogToDelete.id}`)
+    .expect(204)
+
+  const responseAtEnd = await api.get('/api/blogs')
+  const blogsAtEnd = responseAtEnd.body
+  expect(blogsAtEnd).toHaveLength(initialBlogs.length - 1)
+
+  const titles = blogsAtEnd.map(r => r.title)
+  expect(titles).not.toContain(blogToDelete.title)
+})
+
 afterAll(() => {
   mongoose.connection.close()
 })
