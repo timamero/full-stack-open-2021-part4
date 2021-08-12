@@ -14,7 +14,19 @@ blogsRouter.post('/', async (request, response) => {
     blogObject = {
       ...request.body,
       likes: 0
-    }  
+    }
+  }
+
+  if (!blogObject.title) {
+    return response.status(400).json({
+      error: 'title missing'
+    })
+  }
+
+  if (!blogObject.url) {
+    return response.status(400).json({
+      error: 'url missing'
+    })
   }
 
   const blog = new Blog(blogObject)

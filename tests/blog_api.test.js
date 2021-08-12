@@ -132,6 +132,34 @@ test('if like property is missing, add property with default value of 0', async 
   expect(likes).toBe(0)
 })
 
+test('if title is missing response with Bad Request', async () => {
+  // npm test -- -t "if title is missing response with Bad Request"
+  const newBlog = {
+    author: "kpiteng",
+    url: "https://dev.to/kpiteng/microfrontends-with-react-47jb",
+    likes: 1,
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(400)
+})
+
+test('if url is missing response with Bad Request', async () => {
+  // npm test -- -t "if url is missing response with Bad Request"
+  const newBlog = {
+    title: "Microfrontends with React",
+    author: "kpiteng",
+    likes: 1,
+  }
+
+  await api
+    .post('/api/blogs')
+    .send(newBlog)
+    .expect(400)
+})
+
 afterAll(() => {
   mongoose.connection.close()
 })
