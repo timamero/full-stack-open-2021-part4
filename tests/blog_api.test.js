@@ -193,6 +193,27 @@ describe('test user api', () => {
     await user.save()
   })
 
+  test('if username is not unique user is not created', async () => {
+    // npm test -- -t "if username is not unique user is not created"
+    const usersAtStart = await User.find({})
+
+    const newUser = {
+      username: 'root',
+      name: 'fatima camero',
+      password: 'fsecret',
+    }
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+    
+    expect(result.body.error).toContain('`username` to be unique')
+  
+    const usersAtEnd = await User.find({})
+    expect(usersAtEnd).toHaveLength(usersAtStart.length)
+  })
+
   test('if username is missing user is not created', async () => {
     // npm test -- -t "if username is missing user is not created"
     const usersAtStart = await User.find({})
@@ -209,6 +230,69 @@ describe('test user api', () => {
       .expect(400)
     
     expect(result.body.error).toContain('`username` is required')
+  
+    const usersAtEnd = await User.find({})
+    expect(usersAtEnd).toHaveLength(usersAtStart.length)
+  })
+
+  test('if username has less than 3 characters user is not created', async () => {
+    // npm test -- -t "if username has less than 3 characters user is not created"
+    const usersAtStart = await User.find({})
+
+    const newUser = {
+      username: 'fa',
+      name: 'fatima camero',
+      password: 'fsecret',
+    }
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+    
+    expect(result.body.error).toContain(`\`username\` (\`${newUser.username}\`) is shorter than the minimum allowed length (3)`)
+  
+    const usersAtEnd = await User.find({})
+    expect(usersAtEnd).toHaveLength(usersAtStart.length)
+  })
+
+  test('if password is missing user is not created', async () => {
+    // npm test -- -t "if password is missing user is not created"
+    const usersAtStart = await User.find({})
+
+    const newUser = {
+      username: 'fatima',
+      name: 'fatima camero',
+      password: '',
+    }
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+    
+    expect(result.body.error).toContain('password is required')
+  
+    const usersAtEnd = await User.find({})
+    expect(usersAtEnd).toHaveLength(usersAtStart.length)
+  })
+
+  test('if password has less than 3 characters user is not created', async () => {
+    // npm test -- -t "if password has less than 3 characters user is not created"
+    const usersAtStart = await User.find({})
+
+    const newUser = {
+      username: 'fatima',
+      name: 'fatima camero',
+      password: 'fs',
+    }
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+    
+    expect(result.body.error).toContain(`password minimum length is 3`)
   
     const usersAtEnd = await User.find({})
     expect(usersAtEnd).toHaveLength(usersAtStart.length)
