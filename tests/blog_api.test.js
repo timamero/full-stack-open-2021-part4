@@ -1,8 +1,11 @@
 const mongoose = require('mongoose')
 const supertest = require('supertest')
+const bcrypt = require('bcrypt')
 const app = require('../app')
 const api = supertest(app)
 const Blog = require('../models/blogs')
+const User = require('../models/user')
+
 const initialBlogs = [
   {
     _id: "5a422a851b54a676234d17f7",
@@ -64,119 +67,156 @@ beforeEach(async () => {
   await Promise.all(promiseArray)
 })
 
-test('blogs are returned as json', async () => {
-  // npm test -- -t "blogs are returned as json"
-  await api
-    .get('/api/blogs')
-    .expect(200)
-    .expect('Content-Type', /json/)
+describe('test blog api', () => {
+  test('blogs are returned as json', async () => {
+    // npm test -- -t "blogs are returned as json"
+    await api
+      .get('/api/blogs')
+      .expect(200)
+      .expect('Content-Type', /json/)
+  })
+
+  test('all blogs are returned', async () => {
+    // npm test -- -t "all blogs are returned"
+    const response = await api.get('/api/blogs')
+
+    expect(response.body).toHaveLength(initialBlogs.length)
+  })
+
+  test('unique identifier is id', async () => {
+    // npm test -- -t "unique identifier is id"
+    const response = await api.get('/api/blogs')
+    expect(response.body[0].id).toBeDefined()
+  })
+
+  test('a valid blog can be added', async () => {
+    // npm test -- -t "a valid blog can be added"
+    const newBlog = {
+      title: "Microfrontends with React",
+      author: "kpiteng",
+      url: "https://dev.to/kpiteng/microfrontends-with-react-47jb",
+      likes: 1,
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(200)
+      .expect('Content-Type', /json/)
+
+    const response = await api.get('/api/blogs')
+    const responseObject = {
+      title: response.body[initialBlogs.length].title,
+      author: response.body[initialBlogs.length].author,
+      url: response.body[initialBlogs.length].url,
+      likes: response.body[initialBlogs.length].likes,
+    }
+
+    expect(response.body).toHaveLength(initialBlogs.length + 1)
+    expect(responseObject).toEqual(newBlog)
+  })
+
+  test('if like property is missing, add property with default value of 0', async () => {
+    // npm test -- -t "if like property is missing, add property with default value of 0"
+    const newBlog = {
+      title: "Microfrontends with React",
+      author: "kpiteng",
+      url: "https://dev.to/kpiteng/microfrontends-with-react-47jb",
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(200)
+      .expect('Content-Type', /json/)
+
+    const response = await api.get('/api/blogs')
+    const likes = response.body[initialBlogs.length].likes
+
+    expect(likes).toBe(0)
+  })
+
+  test('if title is missing response with Bad Request', async () => {
+    // npm test -- -t "if title is missing response with Bad Request"
+    const newBlog = {
+      author: "kpiteng",
+      url: "https://dev.to/kpiteng/microfrontends-with-react-47jb",
+      likes: 1,
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+  })
+
+  test('if url is missing response with Bad Request', async () => {
+    // npm test -- -t "if url is missing response with Bad Request"
+    const newBlog = {
+      title: "Microfrontends with React",
+      author: "kpiteng",
+      likes: 1,
+    }
+
+    await api
+      .post('/api/blogs')
+      .send(newBlog)
+      .expect(400)
+  })
+
+  test('a blog can be deleted', async () => {
+    // npm test -- -t "a blog can be deleted"
+    const responseAtStart = await api.get('/api/blogs')
+    const blogsAtStart = responseAtStart.body
+    const blogToDelete = blogsAtStart[0]
+
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .expect(204)
+
+    const responseAtEnd = await api.get('/api/blogs')
+    const blogsAtEnd = responseAtEnd.body
+    expect(blogsAtEnd).toHaveLength(initialBlogs.length - 1)
+
+    const titles = blogsAtEnd.map(r => r.title)
+    expect(titles).not.toContain(blogToDelete.title)
+  })
 })
 
-test('all blogs are returned', async () => {
-  // npm test -- -t "all blogs are returned"
-  const response = await api.get('/api/blogs')
+describe('test user api', () => {
+  beforeEach(async () => {
+    await User.deleteMany({})
 
-  expect(response.body).toHaveLength(initialBlogs.length)
+    const passwordHash = await bcrypt.hash('secret', 10)
+    const user = new User({ username: 'root', passwordHash})
+
+    await user.save()
+  })
+
+  test('if username is missing user is not created', async () => {
+    // npm test -- -t "if username is missing user is not created"
+    const usersAtStart = await User.find({})
+
+    const newUser = {
+      username: '',
+      name: 'fatima camero',
+      password: 'fsecret',
+    }
+
+    const result = await api
+      .post('/api/users')
+      .send(newUser)
+      .expect(400)
+    
+    expect(result.body.error).toContain('`username` is required')
+  
+    const usersAtEnd = await User.find({})
+    expect(usersAtEnd).toHaveLength(usersAtStart.length)
+  })
+  
 })
 
-test('unique identifier is id', async () => {
-  // npm test -- -t "unique identifier is id"
-  const response = await api.get('/api/blogs')
-  expect(response.body[0].id).toBeDefined()
-})
 
-test('a valid blog can be added', async () => {
-  // npm test -- -t "a valid blog can be added"
-  const newBlog = {
-    title: "Microfrontends with React",
-    author: "kpiteng",
-    url: "https://dev.to/kpiteng/microfrontends-with-react-47jb",
-    likes: 1,
-  }
-
-  await api
-    .post('/api/blogs')
-    .send(newBlog)
-    .expect(200)
-    .expect('Content-Type', /json/)
-
-  const response = await api.get('/api/blogs')
-  const responseObject = {
-    title: response.body[initialBlogs.length].title,
-    author: response.body[initialBlogs.length].author,
-    url: response.body[initialBlogs.length].url,
-    likes: response.body[initialBlogs.length].likes,
-  }
-
-  expect(response.body).toHaveLength(initialBlogs.length + 1)
-  expect(responseObject).toEqual(newBlog)
-})
-
-test('if like property is missing, add property with default value of 0', async () => {
-  // npm test -- -t "if like property is missing, add property with default value of 0"
-  const newBlog = {
-    title: "Microfrontends with React",
-    author: "kpiteng",
-    url: "https://dev.to/kpiteng/microfrontends-with-react-47jb",
-  }
-
-  await api
-    .post('/api/blogs')
-    .send(newBlog)
-    .expect(200)
-    .expect('Content-Type', /json/)
-
-  const response = await api.get('/api/blogs')
-  const likes = response.body[initialBlogs.length].likes
-
-  expect(likes).toBe(0)
-})
-
-test('if title is missing response with Bad Request', async () => {
-  // npm test -- -t "if title is missing response with Bad Request"
-  const newBlog = {
-    author: "kpiteng",
-    url: "https://dev.to/kpiteng/microfrontends-with-react-47jb",
-    likes: 1,
-  }
-
-  await api
-    .post('/api/blogs')
-    .send(newBlog)
-    .expect(400)
-})
-
-test('if url is missing response with Bad Request', async () => {
-  // npm test -- -t "if url is missing response with Bad Request"
-  const newBlog = {
-    title: "Microfrontends with React",
-    author: "kpiteng",
-    likes: 1,
-  }
-
-  await api
-    .post('/api/blogs')
-    .send(newBlog)
-    .expect(400)
-})
-
-test('a blog can be deleted', async () => {
-  // npm test -- -t "a blog can be deleted"
-  const responseAtStart = await api.get('/api/blogs')
-  const blogsAtStart = responseAtStart.body
-  const blogToDelete = blogsAtStart[0]
-
-  await api
-    .delete(`/api/blogs/${blogToDelete.id}`)
-    .expect(204)
-
-  const responseAtEnd = await api.get('/api/blogs')
-  const blogsAtEnd = responseAtEnd.body
-  expect(blogsAtEnd).toHaveLength(initialBlogs.length - 1)
-
-  const titles = blogsAtEnd.map(r => r.title)
-  expect(titles).not.toContain(blogToDelete.title)
-})
 
 afterAll(() => {
   mongoose.connection.close()
