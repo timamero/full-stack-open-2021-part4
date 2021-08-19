@@ -131,6 +131,7 @@ describe('test blog api', () => {
       .expect('Content-Type', /json/)
 
     const response = await api.get('/api/blogs')
+    console.log('response', response)
     const likes = response.body[initialBlogs.length].likes
 
     expect(likes).toBe(0)

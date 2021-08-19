@@ -2,8 +2,8 @@ POST http://localhost:3001/api/blogs
 Content-Type: application/json
 
 {
-  "title": "The Best VS Code Extensions For Remote Working",
-  "author": "Carlo Marrone",
-  "url": "https://dev.to/marrone_carlo/the-best-vs-code-extensions-for-remote-working-e8e",
-  "likes": 33
+  "title": "Introduction to Machine Learning",
+  "author": "Vivek0712",
+  "url": "https://dev.to/vivek0712/introduction-to-machine-learning-12c9",
+  "userId": "611ea63491338c094c9eda31"
 }
