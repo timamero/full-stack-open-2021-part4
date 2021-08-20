@@ -1,9 +1,10 @@
 POST http://localhost:3001/api/blogs
 Content-Type: application/json
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IlZhbkIiLCJpZCI6IjYxMWVhNjM0OTEzMzhjMDk0YzllZGEzMSIsImlhdCI6MTYyOTQ3ODU3N30.p_x3Fjsf3pqiZDHNfZiyzNSwoW48DfrY22k8_bnwk0A
 
 {
-  "title": "Introduction to Machine Learning",
-  "author": "Vivek0712",
-  "url": "https://dev.to/vivek0712/introduction-to-machine-learning-12c9",
-  "userId": "611ea63491338c094c9eda31"
+  "title": "React Environment Variables",
+  "author": "Suprabha",
+  "url": "https://dev.to/suprabhasupi/react-environment-variables-k0n",
+  "likes": 7
 }
