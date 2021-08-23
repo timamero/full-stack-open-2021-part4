@@ -1,3 +1,4 @@
+const jwt = require('jsonwebtoken')
 const mongoose = require('mongoose')
 const supertest = require('supertest')
 const bcrypt = require('bcrypt')
@@ -67,7 +68,7 @@ beforeEach(async () => {
   await Promise.all(promiseArray)
 })
 
-describe('test blog api', () => {
+describe('test blog api with no user authentication', () => {
   test('blogs are returned as json', async () => {
     // npm test -- -t "blogs are returned as json"
     await api
@@ -87,33 +88,6 @@ describe('test blog api', () => {
     // npm test -- -t "unique identifier is id"
     const response = await api.get('/api/blogs')
     expect(response.body[0].id).toBeDefined()
-  })
-
-  test('a valid blog can be added', async () => {
-    // npm test -- -t "a valid blog can be added"
-    const newBlog = {
-      title: "Microfrontends with React",
-      author: "kpiteng",
-      url: "https://dev.to/kpiteng/microfrontends-with-react-47jb",
-      likes: 1,
-    }
-
-    await api
-      .post('/api/blogs')
-      .send(newBlog)
-      .expect(200)
-      .expect('Content-Type', /json/)
-
-    const response = await api.get('/api/blogs')
-    const responseObject = {
-      title: response.body[initialBlogs.length].title,
-      author: response.body[initialBlogs.length].author,
-      url: response.body[initialBlogs.length].url,
-      likes: response.body[initialBlogs.length].likes,
-    }
-
-    expect(response.body).toHaveLength(initialBlogs.length + 1)
-    expect(responseObject).toEqual(newBlog)
   })
 
   test('if like property is missing, add property with default value of 0', async () => {
@@ -184,6 +158,55 @@ describe('test blog api', () => {
   })
 })
 
+describe('test blog api with no user authentication', () => {
+  beforeEach(async () => {
+    await User.deleteMany({})
+
+    const passwordHash = await bcrypt.hash('secret', 10)
+    const user = new User({ username: 'root', name: 'root', passwordHash})
+
+    await user.save()
+  })
+
+  test('a valid blog can be added', async () => {
+    // npm test -- -t "a valid blog can be added"
+    const newBlog = {
+      title: "Microfrontends with React",
+      author: "kpiteng",
+      url: "https://dev.to/kpiteng/microfrontends-with-react-47jb",
+      likes: 1,
+    }
+
+    // login user
+    const user = await User.findOne({ username: 'root' })
+    const userForToken = {
+      username: user.username,
+      id: user._id
+    }
+    const token = jwt.sign(userForToken, process.env.SECRET)
+
+    await api
+      .post('/api/blogs')
+      .set('Authorization', `bearer ${token}`)
+      .send(newBlog)
+      
+      .expect(200)
+      .expect('Content-Type', /json/)
+
+    const response = await api.get('/api/blogs')
+    const responseObject = {
+      title: response.body[initialBlogs.length].title,
+      author: response.body[initialBlogs.length].author,
+      url: response.body[initialBlogs.length].url,
+      likes: response.body[initialBlogs.length].likes,
+    }
+
+    expect(response.body).toHaveLength(initialBlogs.length + 1)
+    expect(responseObject).toEqual(newBlog)
+  })
+
+})
+
 describe('test user api', () => {
   beforeEach(async () => {
     await User.deleteMany({})
@@ -192,6 +215,7 @@ describe('test user api', () => {
     const user = new User({ username: 'root', passwordHash})
 
     await user.save()
+
   })
 
   test('if username is not unique user is not created', async () => {
