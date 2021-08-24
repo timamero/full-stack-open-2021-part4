@@ -1,6 +1,6 @@
 POST http://localhost:3001/api/blogs
 Content-Type: application/json
-Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkhvcGVMIiwiaWQiOiI2MTFlYTU4ZjkxMzM4YzA5NGM5ZWRhMjUiLCJpYXQiOjE2Mjk3MzczNzZ9.ckRblAHl2iZtIgWUAOEez6pAizcpRB33sbp39PaKF3A
+Authorization: bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IlZhbkIiLCJpZCI6IjYxMWVhNjM0OTEzMzhjMDk0YzllZGEzMSIsImlhdCI6MTYyOTgyNzY4NH0.zlYXkQCCys-qnWQl4gntIMlCLTfU8MSGbzFosBTSZlo
 
 {
   "title": "Time Management for Programmers",

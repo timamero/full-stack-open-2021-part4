@@ -89,76 +89,10 @@ describe('test blog api with no user authentication', () => {
     const response = await api.get('/api/blogs')
     expect(response.body[0].id).toBeDefined()
   })
-
-  test('if like property is missing, add property with default value of 0', async () => {
-    // npm test -- -t "if like property is missing, add property with default value of 0"
-    const newBlog = {
-      title: "Microfrontends with React",
-      author: "kpiteng",
-      url: "https://dev.to/kpiteng/microfrontends-with-react-47jb",
-    }
-
-    await api
-      .post('/api/blogs')
-      .send(newBlog)
-      .expect(200)
-      .expect('Content-Type', /json/)
-
-    const response = await api.get('/api/blogs')
-    console.log('response', response)
-    const likes = response.body[initialBlogs.length].likes
-
-    expect(likes).toBe(0)
-  })
-
-  test('if title is missing response with Bad Request', async () => {
-    // npm test -- -t "if title is missing response with Bad Request"
-    const newBlog = {
-      author: "kpiteng",
-      url: "https://dev.to/kpiteng/microfrontends-with-react-47jb",
-      likes: 1,
-    }
-
-    await api
-      .post('/api/blogs')
-      .send(newBlog)
-      .expect(400)
-  })
-
-  test('if url is missing response with Bad Request', async () => {
-    // npm test -- -t "if url is missing response with Bad Request"
-    const newBlog = {
-      title: "Microfrontends with React",
-      author: "kpiteng",
-      likes: 1,
-    }
-
-    await api
-      .post('/api/blogs')
-      .send(newBlog)
-      .expect(400)
-  })
-
-  test('a blog can be deleted', async () => {
-    // npm test -- -t "a blog can be deleted"
-    const responseAtStart = await api.get('/api/blogs')
-    const blogsAtStart = responseAtStart.body
-    const blogToDelete = blogsAtStart[0]
-
-    await api
-      .delete(`/api/blogs/${blogToDelete.id}`)
-      .expect(204)
-
-    const responseAtEnd = await api.get('/api/blogs')
-    const blogsAtEnd = responseAtEnd.body
-    expect(blogsAtEnd).toHaveLength(initialBlogs.length - 1)
-
-    const titles = blogsAtEnd.map(r => r.title)
-    expect(titles).not.toContain(blogToDelete.title)
-  })
 })
 
-describe('test blog api with no user authentication', () => {
+describe('test blog api with user authentication', () => {
+  // npm test -- -t "test blog api with user authentication"
   beforeEach(async () => {
     await User.deleteMany({})
 
@@ -188,8 +122,7 @@ describe('test blog api with no user authentication', () => {
     await api
       .post('/api/blogs')
       .set('Authorization', `bearer ${token}`)
-      .send(newBlog)
-      
+      .send(newBlog)   
       .expect(200)
       .expect('Content-Type', /json/)
 
@@ -205,6 +138,123 @@ describe('test blog api with no user authentication', () => {
     expect(responseObject).toEqual(newBlog)
   })
 
+  test('if like property is missing, add property with default value of 0', async () => {
+    // npm test -- -t "if like property is missing, add property with default value of 0"
+    const newBlog = {
+      title: "Microfrontends with React",
+      author: "kpiteng",
+      url: "https://dev.to/kpiteng/microfrontends-with-react-47jb",
+    }
+
+    // login user
+    const user = await User.findOne({ username: 'root' })
+    const userForToken = {
+      username: user.username,
+      id: user._id
+    }
+    const token = jwt.sign(userForToken, process.env.SECRET)
+
+    await api
+      .post('/api/blogs')
+      .set('Authorization', `bearer ${token}`)
+      .send(newBlog)
+      .expect(200)
+      .expect('Content-Type', /json/)
+
+    const response = await api.get('/api/blogs')
+    const likes = response.body[initialBlogs.length].likes
+
+    expect(likes).toBe(0)
+  })
+
+  test('if title is missing respond with Bad Request', async () => {
+    // npm test -- -t "if title is missing respond with Bad Request"
+    const newBlog = {
+      author: "kpiteng",
+      url: "https://dev.to/kpiteng/microfrontends-with-react-47jb",
+      likes: 1,
+    }
+
+    // login user
+    const user = await User.findOne({ username: 'root' })
+    const userForToken = {
+      username: user.username,
+      id: user._id
+    }
+    const token = jwt.sign(userForToken, process.env.SECRET)
+
+    await api
+      .post('/api/blogs')
+      .set('Authorization', `bearer ${token}`)
+      .send(newBlog)
+      .expect(400)
+  })
+
+  test('if url is missing respond with Bad Request', async () => {
+    // npm test -- -t "if url is missing respond with Bad Request"
+    const newBlog = {
+      title: "Microfrontends with React",
+      author: "kpiteng",
+      likes: 1,
+    }
+
+    // login user
+    const user = await User.findOne({ username: 'root' })
+    const userForToken = {
+      username: user.username,
+      id: user._id
+    }
+    const token = jwt.sign(userForToken, process.env.SECRET)
+
+    await api
+      .post('/api/blogs')
+      .set('Authorization', `bearer ${token}`)
+      .send(newBlog)
+      .expect(400)
+  })
+
+  test('a blog can be deleted', async () => {
+    // npm test -- -t "a blog can be deleted"
+
+    // login user
+    const user = await User.findOne({ username: 'root' })
+    const userForToken = {
+      username: user.username,
+      id: user._id
+    }
+    const token = jwt.sign(userForToken, process.env.SECRET)
+    
+    // create new blog that will be deleted by same user that created it
+    const newBlog = {
+      title: "Microfrontends with React",
+      author: "kpiteng",
+      url: "https://dev.to/kpiteng/microfrontends-with-react-47jb",
+      likes: 1,
+    }
+
+    await api
+      .post('/api/blogs')
+      .set('Authorization', `bearer ${token}`)
+      .send(newBlog)   
+      .expect(200)
+      .expect('Content-Type', /json/)
+    
+    const responseAtStart = await api.get('/api/blogs')
+    const blogsAtStart = responseAtStart.body
+    const blogToDelete = blogsAtStart[blogsAtStart.length - 1]
+
+    await api
+      .delete(`/api/blogs/${blogToDelete.id}`)
+      .set('Authorization', `bearer ${token}`)
+      .expect(204)
+
+    const responseAtEnd = await api.get('/api/blogs')
+    const blogsAtEnd = responseAtEnd.body
+    expect(blogsAtEnd).toHaveLength(initialBlogs.length)
+
+    const titles = blogsAtEnd.map(r => r.title)
+    expect(titles).not.toContain(blogToDelete.title)
+  })
 })
 
 describe('test user api', () => {
