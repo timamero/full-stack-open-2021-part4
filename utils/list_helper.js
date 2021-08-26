@@ -1,3 +1,6 @@
+const { forEach } = require('lodash');
+var _ = require('lodash');
+
 const dummy = (blogs) => {
   return 1
 }
@@ -14,36 +17,36 @@ const favoriteBlog = (blogs) => {
 }
 
 const mostBlogs = (blogs) => {
-  // Failing for multiple blogs, complete later
-
-  let countedAuthors = []
-  for (let i = 0; i < blogs.length; i++) {
-    if (!countedAuthors.map(item => item.author).includes(blogs[i].author)) {
-      // If author not on list, add to list and start count at 1
-      countedAuthors.push({"author": blogs[i].author, "blogs": 1})
-    } else {
-      // Increment blog count for author by 1
-      countedAuthors = countedAuthors.map(item => {
-        if (item.author === blogs[i].author) {
-          return {"author": item.author, "blogs": item.blogs++}
-        } else {
-          return item
-        }
-      })
-    }
-  }
-  console.log('counted authors', countedAuthors)
-  return countedAuthors[0]
+  const count = _.countBy(blogs, 'author')
+  const blogCountByAuthor = []
+  
+  _.forEach(count, (value, key) => {
+    blogCountByAuthor.push({author: key, blogs: value})
+  })
+  const max = _.maxBy(blogCountByAuthor, 'blogs')
+  
+  return max
 }
 
-// Complete later
-// const mostLikes = () => {
+const mostLikes = (blogs) => {
+  const authorGroups = _.groupBy(blogs, 'author')
+  const likesCountByAuthor = []
 
-// }
+  _.forEach(authorGroups, (value, key) => {
+    const totalLikes = _.reduce(value, (result,value,key) => {
+      return result + value.likes
+    }, 0)
+    likesCountByAuthor.push({author: key, likes: totalLikes})
+  })
+
+  const max = _.maxBy(likesCountByAuthor, 'likes')
+  return max
+}
 
 module.exports = {
   dummy,
   totalLikes,
   favoriteBlog,
-  mostBlogs
+  mostBlogs,
+  mostLikes
 }

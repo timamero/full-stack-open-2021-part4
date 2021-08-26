@@ -1,4 +1,5 @@
 const listHelper = require('../utils/list_helper')
+
 describe('total likes', () => {
   const listWithOneBlog = [
     {
@@ -147,7 +148,7 @@ describe('favorite blog', () => {
   })
 })
 
-describe('most blogs', () => {
+describe('most blogs and likes', () => {
   const listWithOneBlog = [
     {
       _id: '5a422aa71b54a676234d17f8',
@@ -210,16 +211,23 @@ describe('most blogs', () => {
     }  
   ]
 
-  test('when list has only one blog, equals that blog', () => {
+  test('when list has only one blog, blog with most blogs equals that blog', () => {
     const result = listHelper.mostBlogs(listWithOneBlog)
-    console.log('one blog results', result)
     expect(result).toEqual({ author: 'Edsger W. Dijkstra', blogs: 1 })
   })
 
-  // Multiple blogs test is failing
-  // test('when list has multiple blogs, equals the blog with the most number of blogs', () => {
-  //   const result = listHelper.mostBlogs(blogs)
-  //   console.log('multiple blog results', result)
-  //   expect(result).toEqual("Robert C. Martin")
-  // })
+  test('when list has multiple blogs, equals the blog with the most number of blogs', () => {
+    const result = listHelper.mostBlogs(blogs)
+    expect(result).toEqual({ author: 'Robert C. Martin', blogs: 3 })
+  })
+
+  test('when list has only one blog, blog with most likes equals that blog', () => {
+    const result = listHelper.mostLikes(listWithOneBlog)
+    expect(result).toEqual({ author: 'Edsger W. Dijkstra', likes: 5 })
+  })
+
+  test('when list has multiple blogs, equals the author with highest sum of likes', () => {
+    const result = listHelper.mostLikes(blogs)
+    expect(result).toEqual({ author: 'Edsger W. Dijkstra', likes: 17 })
+  })
 })
